@@ -1,0 +1,9 @@
+mysql-connector
+mysql
+flask
+flaskwebgui
+jieba
+
+# dev
+black
+auto-py-to-exe

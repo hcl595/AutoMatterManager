@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% block include %}
+{{ super() }}
+<title>Share 共享</title>
+{% endblock %}
+    <meta charset="UTF-8">
+</head>
+{% block body %}
+<body onload="edit_msg('{{ show_msg }}')">
+    <input type="hidden" value="share">
+
+<div id="main" class="bigtable">
+    <div id="left" style="width:70%;height:100%;float:left;">
+        <div class="thumbnail" style="background: rgba(255, 255, 255, 0) ;height:100%;width:100%;float:left;">
+            <table class="table">
+                <thead>
+                    <th>
+                        <div class = "icon-2"><i class="fa fa-cloud-upload" style="height: 100;width:auto"></i></div>
+                    </th>
+                    <th>
+                        <font size="4">我的共享</font>
+                    </th>
+                    <th>
+                        {{ output }}
+                    </th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="col">
+                            <font size="5">选择</font>
+                        </th>
+                        <th scope="col">
+                            <font size="5">日期</font>
+                        </th>
+                        <th scope="col">
+                            <font size="5">开始时间</font>
+                        </th>
+                        <th scope="col">
+                            <font size="5">结束时间</font>
+                        </th>
+                        <th scope="col">
+                            <font size="5">事件</font>
+                        </th>
+                        <th scope="col">
+                            <font size="5">等级</font>
+                        </th>
+                    </tr>
+                    <form action="/share_share" method="POST">
+                    {% for events in events %}
+                        <tr>
+                            <td>
+                            <input name="select"  type="checkbox" value={{ events["Id"] }}>
+                            </td>
+                            <td>{{ events["day"] }}</td>
+                            <td>{{ events["start_time"] }}</td>
+                            <td>{{ events["finish_time"] }}</td>
+                            <td>{{ events["event"] }}</td>
+                            <td>{{ events["level"] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+                <input name="share_user" style="background: rgba(255, 255, 255, 0) ;height:100%;width:80%;float:center;" placeholder="用户名/UID">
+                <button style="background: rgba(255, 255, 255, 0) ;height:100%;width:20%;float:right;" herf="/share_share"><i class="fa fa-send"></i>分享</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="right" style="width:30%;height:100%;float:left;">
+        <div class="thumbnail" style="background: rgba(255, 255, 255, 0) ;height:100%;width:100%;float:left;">
+            <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th><div class = "icon-2"><i class="fa fa-cloud-download" style="height: 100;width:auto"></i></div></th>
+                    <th scope="col"><font size="5">别人的分享</font></th>
+                </tr>
+            </thead>
+            <tbody>
+                <div>
+            {% for share in shares %}
+                <form action="/share_acc&ref" method="post">
+                    <tr>
+                        <th scope="row"><font size="4">{{ share['share_user'] }}的分享</font></th>
+                        <th scope="row"><font size="4">事件: {{ share['event_name'] }}</font></th>
+                        <input type="hidden" name={{ share['acc_user'] }} id="type">
+                        <input type="hidden" name = "id" value={{ share['Id'] }} id="type">
+                        <input type="hidden" name = "sender" value={{ share['share_user'] }} id="type">
+                    </tr>
+                    <tr>
+                        <td >
+                        <input type="submit" value="接受" class="accbutton" onclick="$('#state').val('acc')">
+                        </td>
+                        <td >
+                        <input type="hidden" name = "state" value="none" id ='state'>
+                        <input type="submit" value="拒绝" class="refbutton" onclick="$('#state').val('ref')">
+                        </td>
+                    </tr>
+                </form>
+            {% endfor %}
+                </div>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
+{% endblock %}
