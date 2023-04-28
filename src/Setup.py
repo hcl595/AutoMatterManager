@@ -1,9 +1,11 @@
 import configparser
+import os
+import sys
 
 cfg = configparser.ConfigParser()
-cfg.read("config.cfg")
-
-
+exepath = os.path.dirname(sys.path[0])
+print(exepath + "\src\static\config.cfg")
+cfg.read(exepath + "\src\static\config.cfg")
 
 class Settings(object):
     def __init__(self) -> None:
