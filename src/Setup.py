@@ -5,7 +5,6 @@ cfg = configparser.ConfigParser()
 cfg.read("config.cfg")
 config_file = Path(__file__).parent / "config.cfg"
 
-
 class Settings(object):
     def __init__(self) -> None:
         if not config_file.exists():
