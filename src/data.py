@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector.locales.eng import client_error
 from Setup import Settings
 
 sets = Settings()
