@@ -1,15 +1,24 @@
 import configparser
-import os
-import sys
+from pathlib import Path
 
 cfg = configparser.ConfigParser()
-exepath = os.path.dirname(sys.path[0])
-print(exepath + "\src\static\config.cfg")
-cfg.read(exepath + "\src\static\config.cfg")
+cfg.read("config.cfg")
+config_file = Path(__file__).parent / "config.cfg"
 
 class Settings(object):
     def __init__(self) -> None:
-        pass
+        if not config_file.exists():
+            f = open(config_file,'w', encoding='utf-8')
+            f.write('[config]\n')
+            f.write('data_mode = False\n')
+            f.write('dev_mode = False\n')
+            f.write('keep_login = True\n')
+            f.write('\n')
+            f.write('[Settings]\n')
+            f.write('acc = admin\n')
+            f.write('port = 5000\n')
+            f.write('\n')
+            f.close()
 
     def database(self):
         out = cfg.get("config","Data_Mode")
