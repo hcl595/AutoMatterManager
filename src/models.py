@@ -4,6 +4,7 @@ import jieba
 
 db = SQLManager()
 
+
 def cal_add(a, b=0):#类型转换
     return a+b
 

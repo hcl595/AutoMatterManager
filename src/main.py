@@ -1,7 +1,6 @@
 #Head
 from flask import Flask, redirect, render_template, request
 from flaskwebgui import FlaskUI
-from datetime import timedelta
 import time
 import ctypes
 
@@ -13,7 +12,7 @@ from Setup import Settings
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-#Release_0.5.0_DevVer 2023-04-25-1
+#Release_0.5.2_DevVer 2023-04-29-1
 
 #database
 from data import SQLManager
@@ -41,7 +40,6 @@ port = sets.rd("Settings","port")
 #app
 @app.route('/')#根目录
 def login():
-    print(acc)
     return render_template('login.html',
                             **{'error':login_error})
 
@@ -189,7 +187,6 @@ def share_check():
         return redirect("/")
     input_acc = request.form.get("share_user")
     share_ids = request.form.getlist("select")
-    print(share_ids)
     for share_id in share_ids:
         share_id,*share_ids = share_ids
         share_names = db.get_one("select event from `matter` where id =",share_id)
@@ -341,7 +338,6 @@ def friends():
     friends = db.get_list("select * from `user` where account =",acc)#test mode
     #friends = db.get_list("select * from `friends` where friends-o =",acc)#prdc mode
     friends = lamba(friends,friends,headers_f)
-    print(friends)
     return render_template("friends.html",
                            friends = friends
                            )
@@ -355,7 +351,6 @@ def settings():
     o_data_mode = sets.rd("config","Data_Mode")
     o_keep_login = sets.rd("config","Keep_Login")
     o_Dev_Mode = sets.rd("config","Dev_Mode")
-    print(o_Dev_Mode)
     return render_template('settings.html',
                            Data_c = o_data_mode,
                            KpLi_c = o_keep_login,
@@ -400,7 +395,6 @@ def login_check():
     acc_result = len(get_acc)
     get_pwd = db.get_list("select password from user WHERE password =",(password))
     pwd_result = len(get_pwd)
-    print(account,get_acc,get_pwd)
     if account and password:
         if acc_result >= 1:
             if pwd_result >= 1:
@@ -433,7 +427,6 @@ def register_test():
     global login_error
     account = request.form.get("reg_txt")
     password = request.form.get("set_password")
-    print("account:",account)
     db.into2("insert into user (account,password) values",account,password)
     login_error = '注册成功'
     return redirect('/')
@@ -444,7 +437,6 @@ def error404(error):
     return render_template('404.html'),404
 
 if __name__ == '__main__':
-    print(dev_mode)
     if dev_mode == "True":
     #WEB MODE
         app.run(debug=True,port=port)

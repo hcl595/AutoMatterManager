@@ -1,16 +1,15 @@
 import configparser
 from pathlib import Path
 
-cfg = configparser.ConfigParser()
-cfg.read("config.cfg")
 config_file = Path(__file__).parent / "config.cfg"
 
+
 class Settings(object):
-    def __init__(self) -> None:
+    def __init__(self):
         if not config_file.exists():
-            f = open(config_file,'w', encoding='utf-8')
+            f = open(config_file,'w')
             f.write('[config]\n')
-            f.write('data_mode = False\n')
+            f.write('data_mode = True\n')
             f.write('dev_mode = False\n')
             f.write('keep_login = True\n')
             f.write('\n')
@@ -19,9 +18,11 @@ class Settings(object):
             f.write('port = 5000\n')
             f.write('\n')
             f.close()
+        self.cfg = configparser.ConfigParser()
+        self.cfg.read(config_file)
 
     def database(self):
-        out = cfg.get("config","Data_Mode")
+        out = self.cfg.get("config","Data_Mode")
         if out == "True":
             reselt = {
                     "host": "frp-eye.top",
@@ -41,28 +42,27 @@ class Settings(object):
         return reselt
 
     def bg_path(self):
-        out = cfg.get("config","Background_path")
+        out = self.cfg.get("config","Background_path")
         return out
     
     def keep_login(self):
-        out = cfg.get("config","keep_login")
+        out = self.cfg.get("config","keep_login")
         if out == "True":
-            reselt = cfg.get("Settings","acc")
+            reselt = self.cfg.get("Settings","acc")
         else:
             reselt = None
         return reselt
 
     def cfg_in(self, section, option, value):
         value = str(value)
-        cfg.set(section,option,value)
-        cfg.write(open('config.cfg', "w"))
+        self.cfg.set(section,option,value)
+        self.cfg.write(open(config_file, "w"))
 
     def dev_mode(self):
-        out = cfg.get('config',"Dev_Mode")
-        print(out)
+        out = self.cfg.get('config',"Dev_Mode")
         return out
 
     def rd(self, section, option):
-        out = cfg.get(section,option)
+        out = self.cfg.get(section,option)
         return out
     

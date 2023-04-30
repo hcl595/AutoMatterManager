@@ -110,7 +110,7 @@ html::before {
 }
 
 .icon-bar {
-  width: 70%;
+  width: 80%;
   float: center;
   display: flex;
   overflow: hidden;
