@@ -12,11 +12,11 @@ from Setup import Settings
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-#Release_0.5.2_DevVer 2023-04-29-1
+#Release_Ver_0.5.4_Dev 2023-05-07-1
 
 #database
-from data import SQLManager
-db = SQLManager()
+import data as db
+from data import userInfo,matter,type,share,setup
 
 #settings
 sets = Settings()
@@ -40,6 +40,8 @@ port = sets.rd("Settings","port")
 #app
 @app.route('/')#根目录
 def login():
+    result = db.session.query(userInfo.id,userInfo.name,userInfo.key,).all()
+    print(result)
     return render_template('login.html',
                             **{'error':login_error})
 
@@ -53,7 +55,8 @@ def home():
     day = time.strftime('%Y-%m-%d',time.localtime(time.time()))
     if choose != 1:
         edit_judge_msg = 0
-        events = db.get_list_order('select * from matter where acc = ','ORDER By day',(acc))
+        events = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,).all()
+        print(events)
         events = lamba(events,events,headers)
     return render_template('home.html',
                             day = day,
@@ -77,7 +80,8 @@ def home_check():
         choose = 0
     else:
         choose = 2
-        events = db.get_list2("select * from matter where day = "," and acc = ",datechoose,acc)
+        events = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
+                .filter(matter.day== datechoose,matter.acc== acc,).all()
         events = lamba(events,events,headers)
     return redirect('/home')
 
@@ -91,7 +95,9 @@ def home_event_check():
     if login_error != 1:
         return redirect("/")
     delid = request.form.get("finish")
-    db.delete("delete from matter where Id =",(delid))
+    db.session.query(db.type).filter(type.id== delid).delete()
+    db.session.commit()
+    db.session.remove()
     return redirect('/home')
 
 
@@ -151,8 +157,10 @@ def add_test():
     level = request.form.get("level")
     if len(day) == 0:
         day = time.strftime('%Y-%m-%d',time.localtime(time.time()))
-    db.into6("INSERT INTO matter (day,start_time,finish_time,event,level,acc) VALUES ",day,start_time,finish_time,event,level,acc)
-    db.get_list3("select start_time from `matter` where `start_time` = "," and `finish_time` = "," and `day` = ",start_time,finish_time,day)
+    Info = db.matter(day=day,start_time=start_time,finish_time=finish_time,event=event,level=level,acc=acc)
+    db.session.add(Info)
+    db.session.commit()
+    db.session.remove()
     return redirect('/add')
 
 
@@ -162,11 +170,13 @@ def share():
     login_error = check_login(acc)
     if login_error != 1:
         return redirect("/")
-    share_list = db.get_list_order('select * from share where acc_user = ','ORDER By event',(acc))
+    share_list = db.session.query(db.share.id,db.share.share_user,db.share.acc_user,db.share.eventID,db.share.eventInfo,)\
+                .filter(db.share.acc_user == acc,).all()
     share_list = lamba(share_list,share_list,headers=["Id","share_user","acc_user","event","event_name"])
     if choose != 1:
         edit_judge_msg = 0
-        events = db.get_list_order('select * from matter where acc = ','ORDER By day',(acc))
+        events = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
+                .filter(matter.acc == acc).all()
         events = lamba(events,events,headers)
     return render_template('share.html',
                             events = events,
@@ -189,10 +199,13 @@ def share_check():
     share_ids = request.form.getlist("select")
     for share_id in share_ids:
         share_id,*share_ids = share_ids
-        share_names = db.get_one("select event from `matter` where id =",share_id)
+        share_names = db.session.query(matter.event).filter(matter.id == share_id).one()
         for share_name in share_names:
             share_name,*share_names = share_names
-            db.into4("INSERT INTO `share` (share_user,acc_user,event,event_name) VALUES ",acc,input_acc,share_id,share_name)
+            Info = db.share(share_user = acc,acc_user = input_acc,eventID = share_id,eventInfo = share_name)
+            db.session.add(Info)
+            db.session.commit()
+            db.session.remove()
     return redirect('/share')
     
 
@@ -207,14 +220,18 @@ def share_accref():
     id = request.form.get("id")
     share_id = request.form.get("share_id")
     if msg == "acc":
-        share_list = db.get_one("select * from `matter` where id =",id)
-        id_tmp,day,start_time,finish_time,event,level,acc_tmp = share_list
-        db.into6("INSERT INTO matter (day,start_time,finish_time,event,level,acc) VALUES ",day,start_time,finish_time,event,level,acc)
-        db.delete("delete from share where Id = ",share_id)
+        share_list = db.session.query(matter.day,matter.start_time,matter.finish_time,matter.event,matter.level)\
+                    .filter(matter.id == id).one()
+        day,start_time,finish_time,event,level = share_list
+        Info = db.matter(day=day,start_time=start_time,finish_time=finish_time,event=event,level=level,acc=acc)
+        db.session.add(Info)
+        db.session.query(db.share).filter(db.share.id == share_id).delete()
         edit_msg = "已接受"
     elif msg == "ref":
         edit_msg = "已拒绝"
-        db.delete("delete from `share` where Id = ",share_id)
+        db.session.query(db.share).filter(id == share_id).delete()
+    db.session.commit()
+    db.session.remove()
     return redirect('/share')
 
 
@@ -226,7 +243,7 @@ def type_web():
         return redirect("/")
     if choose != 2:
         edit_judge_msg = 0
-        type_list = db.get_list('select * from type where acc = ',(acc))
+        type_list = db.session.query(type.id,type.type,type.level,type.acc,).filter(acc == acc).all()
         type_list = list(map(lambda e: dict(zip(headers1, e)), type_list))
     return render_template('type.html',
                             tables = type_list,
@@ -245,7 +262,10 @@ def type_add():
         return redirect("/")
     type_input = request.form.get("type")
     level_input = request.form.get("level")
-    db.into3("insert into `type` (type,level,acc) values ",type_input,level_input,acc)
+    Info = type(type= type_input,level= level_input,acc= acc)
+    db.session.add(Info)
+    db.session.commit()
+    db.session.remove()
     return redirect("/type")
 
 
@@ -258,7 +278,9 @@ def type_del():
     if login_error != 1:
         return redirect("/")
     id = request.form.get("id")
-    db.delete("delete from type where id =",(id))
+    db.session.query(db.type).filter(type.id == id).delete()
+    db.session.commit()
+    db.session.remove()
     return redirect("/type")
 
 
@@ -268,7 +290,8 @@ def edit():
     login_error = check_login(acc)
     if login_error != 1:
         return redirect("/")
-    id = db.get_list('select * from matter where acc = ',(acc)) 
+    id = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
+        .filter(acc == acc).all()
     id = list(map(lambda e: dict(zip(headers, e)), id))
     place_time = time.strftime('%H:%m',time.localtime(time.time()))
     day = time.strftime('%Y-%m-%d',time.localtime(time.time()))
@@ -297,9 +320,10 @@ def edit_del():
     sel_ft = request.form.get("finish_time")
     sel_na = request.form.get("event")
     sel_le = request.form.get("level")
-    sel_list = db.get_list("select * from `matter` where id = ",sel_id)
+    sel_list = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
+            .filter(matter.id == sel_id).all()
     sel_all,*sel_list = sel_list
-    sel_id,get_da,get_st,get_ft,get_na,get_le,sel_acc = sel_all
+    sel_id,get_da,get_st,get_ft,get_na,get_le = sel_all
     if len(sel_da) == 0:
         up_da = get_da
     else:
@@ -322,10 +346,20 @@ def edit_del():
         up_le = sel_le
     sel_id = str(sel_id)
     if sel_type == "update":
-        db.update("update `matter` set day = ",",start_time = ",",finish_time = ",",event = ",",level = "," where `Id` =",up_da,up_st,up_ft,up_na,up_le,sel_id)
+        db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
+            .filter(matter.id == sel_id).one()
+        matter.day=up_da
+        matter.start_time = up_st
+        matter.finish_time = up_ft
+        matter.event = up_na
+        matter.level = up_le
+        db.session.commit()
+        db.session.remove()
         edit_judge_msg = "编辑成功"         
     elif sel_type == "del":
-        db.delete("delete from matter where Id =",(sel_id))         
+        db.session.query(db.matter).filter(matter.id == sel_id).delete()
+        db.session.commit()
+        db.session.remove()
         edit_judge_msg = "删除成功"      
     return redirect('/edit')
 
@@ -335,7 +369,7 @@ def friends():
     login_error = check_login(acc)
     if login_error != 1:
         return redirect("/")
-    friends = db.get_list("select * from `user` where account =",acc)#test mode
+    friends = db.session.query(userInfo.name).filter(userInfo.name == acc).all()
     #friends = db.get_list("select * from `friends` where friends-o =",acc)#prdc mode
     friends = lamba(friends,friends,headers_f)
     return render_template("friends.html",
@@ -378,7 +412,7 @@ def me():
     login_error = check_login(acc)
     if login_error != 1:
         return redirect("/")
-    uid = db.get_one("select id from user where account = ",acc)
+    uid = db.session.query(userInfo.id).filter(userInfo.name == acc,).first()
     uid = cal_add(*uid)
     return render_template('personal.html',
                             user = acc,
@@ -391,9 +425,10 @@ def login_check():
     global login_error,choose
     account = request.form.get("logid")
     password = request.form.get("password")
-    get_acc = db.get_list("select account from user WHERE account =",(account))
+    get_acc = db.session.query(userInfo.name).filter(userInfo.name == account).all()
     acc_result = len(get_acc)
-    get_pwd = db.get_list("select password from user WHERE password =",(password))
+    get_pwd = db.session.query(userInfo.key).filter(userInfo.key == password).all()
+    print(get_pwd)
     pwd_result = len(get_pwd)
     if account and password:
         if acc_result >= 1:
@@ -426,9 +461,21 @@ def logout():
 def register_test():
     global login_error
     account = request.form.get("reg_txt")
+    mail = request.form.get("email")
     password = request.form.get("set_password")
-    db.into2("insert into user (account,password) values",account,password)
-    login_error = '注册成功'
+    check_password = request.form.get("check_password")
+    if password == check_password:
+        print(account,password)
+        info = db.userInfo(
+                        name=account,
+                        key= password,
+                        mail=mail,)
+        db.session.add(info)
+        db.session.commit()
+        db.session.remove()
+        login_error = '注册成功'
+    else:
+        login_error = '密码不一'
     return redirect('/')
 
 
@@ -437,6 +484,7 @@ def error404(error):
     return render_template('404.html'),404
 
 if __name__ == '__main__':
+    setup()
     if dev_mode == "True":
     #WEB MODE
         app.run(debug=True,port=port)
