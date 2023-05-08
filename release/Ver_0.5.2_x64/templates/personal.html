@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+{% block include %}
+{{ super() }}
+<title>Personal Center 个人中心</title>
+{% endblock %}
+</head>
+{% block body %}
+<body>
+    <input type="hidden" value="me">
+    <div class="aboutme">
+    <center>
+        <div class = "icon"><i class="fa fa-user-circle" style="height: 100%;width: 100%;"></i></div>
+    <h1>{{ user }}</h1>
+    <h1>  UID: {{ uid }}</h1>
+    <form action="/logout" method="POST">
+        <button type="submit" style="background: linear-gradient(120deg,#ff93934f 0%, #ff6161b6 100%);width:100px;  border-radius: 0.5rem;"><h4>登出</h4></button>
+    </form>
+    </center>
+</div>
+</body>
+</html>
+{% endblock %}
