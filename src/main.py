@@ -345,14 +345,16 @@ def edit_del():
     else:
         up_le = sel_le
     sel_id = str(sel_id)
+
     if sel_type == "update":
-        db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
-            .filter(matter.id == sel_id).one()
-        matter.day=up_da
-        matter.start_time = up_st
-        matter.finish_time = up_ft
-        matter.event = up_na
-        matter.level = up_le
+        db.session.query(db.matter).filter(matter.acc == acc,matter.id == sel_id).update({
+                                                db.matter.event:up_na,
+                                                db.matter.day:up_da,
+                                                db.matter.start_time:up_st,
+                                                db.matter.finish_time:up_ft,
+                                                db.matter.event:up_na,
+                                                db.matter.level:up_le,
+                                                })
         db.session.commit()
         db.session.remove()
         edit_judge_msg = "编辑成功"         

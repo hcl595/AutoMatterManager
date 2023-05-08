@@ -1,22 +1,14 @@
 # models.py
 import datetime
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import scoped_session
-from sqlalchemy_utils import database_exists,create_database
 from sqlalchemy import create_engine,Column,Integer,String,UniqueConstraint,Index
+from sqlalchemy.orm import sessionmaker,scoped_session
+from sqlalchemy_utils import database_exists,create_database
 from sqlalchemy.ext.declarative import declarative_base
 
 # 基础类
 Base = declarative_base()
 
-engine = create_engine(
-    "mysql+mysqlconnector://root:root@127.0.0.1:3306/FlaskProgram",
-    max_overflow=0,
-    pool_size=5,
-    pool_timeout=10,
-    pool_recycle=1,
-    echo=True
-)
+engine = create_engine("mysql+mysqlconnector://root:root@127.0.0.1:3306/FlaskProgram")
 
 Session = sessionmaker(bind=engine)
 session = scoped_session(Session)
@@ -103,3 +95,10 @@ def setup():
 
 if __name__ == "__main__":
     setup()
+    result = session.query(userInfo.id,userInfo.name,).all()
+    print("already")
+    print(result)
+    print("complete!")
+    result = session.query(matter.id,matter.acc,).all()
+    print(result)
+    print("complete!")

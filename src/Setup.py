@@ -37,7 +37,7 @@ class Settings(object):
                     "port": 3306,
                     "user": "root",
                     "passwd": "root",
-                    "db": "flaskdata"
+                    "db": "local"
                     }
         return reselt
 

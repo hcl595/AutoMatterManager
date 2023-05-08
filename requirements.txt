@@ -1,5 +1,8 @@
 mysql-connector
 mysql
+sqlalchemy
+sqlalchemy_utils
+pandas
 flask
 flaskwebgui
 jieba
