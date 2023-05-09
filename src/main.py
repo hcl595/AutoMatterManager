@@ -1,5 +1,5 @@
 #Head
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, session
 from flaskwebgui import FlaskUI
 import time
 import ctypes
@@ -11,8 +11,9 @@ from Setup import Settings
 #Flask
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.config['SECRET_KEY'] = 'ReleaseVer057Dev'
 
-#Release_Ver_0.5.4_Dev 2023-05-07-1
+#Release_Ver_0.5.7_Dev 2023-05-09-1
 
 #database
 import data as db
@@ -33,7 +34,7 @@ edit_judge_msg = 0
 edit_msg = None
 login_error = "已打开"
 event2 = []
-acc = sets.keep_login()
+keep_login = sets.keep_login()
 dev_mode = sets.dev_mode()
 port = sets.rd("Settings","port")
 
@@ -41,7 +42,6 @@ port = sets.rd("Settings","port")
 @app.route('/')#根目录
 def login():
     result = db.session.query(userInfo.id,userInfo.name,userInfo.key,).all()
-    print(result)
     return render_template('login.html',
                             **{'error':login_error})
 
@@ -49,14 +49,10 @@ def login():
 @app.route('/home')#主页
 def home():
     global choose,events,edit_msg,edit_judge_msg
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     day = time.strftime('%Y-%m-%d',time.localtime(time.time()))
     if choose != 1:
         edit_judge_msg = 0
         events = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,).all()
-        print(events)
         events = lamba(events,events,headers)
     return render_template('home.html',
                             day = day,
@@ -72,9 +68,6 @@ def home_check():
     global choose,events,edit_msg,edit_judge_msg
     edit_judge_msg = 1
     edit_msg = "搜索成功"
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     datechoose = request.form.get("datechoose")
     if datechoose == '':
         choose = 0
@@ -91,9 +84,6 @@ def home_event_check():
     global choose,events,edit_msg,edit_judge_msg
     edit_judge_msg = 1
     edit_msg = "完成!"
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     delid = request.form.get("finish")
     db.session.query(db.type).filter(type.id== delid).delete()
     db.session.commit()
@@ -104,9 +94,6 @@ def home_event_check():
 @app.route('/search',methods=["POST"])#搜索
 def home_search():
     global choose,events,type_list,edit_msg,edit_judge_msg
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     redirect_1 = request.form.get("redirect")
     search = request.form.get("search")
     edit_judge_msg = 1
@@ -130,9 +117,6 @@ def home_search():
 @app.route('/add')#添加
 def add():
     global edit_judge_msg,edit_msg
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     place_time = time.strftime('%H:%m',time.localtime(time.time()))
     day = time.strftime('%Y-%m-%d',time.localtime(time.time()))
     return render_template('add.html',
@@ -147,9 +131,6 @@ def add_test():
     global edit_judge_msg,edit_msg
     edit_judge_msg = 1
     edit_msg = "添加成功"
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     event = request.form.get("event")
     day = request.form.get("date")
     start_time = request.form.get("start_time")
@@ -167,9 +148,6 @@ def add_test():
 @app.route('/share')#分享
 def share():
     global edit_judge_msg,edit_msg,events
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     share_list = db.session.query(db.share.id,db.share.share_user,db.share.acc_user,db.share.eventID,db.share.eventInfo,)\
                 .filter(db.share.acc_user == acc,).all()
     share_list = lamba(share_list,share_list,headers=["Id","share_user","acc_user","event","event_name"])
@@ -192,9 +170,6 @@ def share_check():
     global edit_judge_msg,edit_msg
     edit_judge_msg = 1
     edit_msg = "已发送,等待对方接受"
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     input_acc = request.form.get("share_user")
     share_ids = request.form.getlist("select")
     for share_id in share_ids:
@@ -213,9 +188,6 @@ def share_check():
 def share_accref():
     global edit_msg,edit_judge_msg
     edit_judge_msg = 1
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     msg = request.form.get("state")
     id = request.form.get("id")
     share_id = request.form.get("share_id")
@@ -238,9 +210,6 @@ def share_accref():
 @app.route('/type')#类别
 def type_web():
     global type_list,edit_msg,edit_judge_msg
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     if choose != 2:
         edit_judge_msg = 0
         type_list = db.session.query(type.id,type.type,type.level,type.acc,).filter(acc == acc).all()
@@ -257,9 +226,6 @@ def type_add():
     global edit_msg,edit_judge_msg
     edit_judge_msg = 1
     edit_msg = "添加成功"
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     type_input = request.form.get("type")
     level_input = request.form.get("level")
     Info = type(type= type_input,level= level_input,acc= acc)
@@ -274,9 +240,6 @@ def type_del():
     global edit_msg,edit_judge_msg
     edit_judge_msg = 1
     edit_msg = "删除成功"
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     id = request.form.get("id")
     db.session.query(db.type).filter(type.id == id).delete()
     db.session.commit()
@@ -287,9 +250,6 @@ def type_del():
 @app.route('/edit')#编辑
 def edit():           
     global edit_msg,edit_judge_msg
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     id = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
         .filter(acc == acc).all()
     id = list(map(lambda e: dict(zip(headers, e)), id))
@@ -306,9 +266,6 @@ def edit():
 @app.route('/edit-del&edi',methods=["POST"])#编辑-分支-删除&编辑
 def edit_del():           
     global edit_msg,edit_judge_msg
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     edit_judge_msg = 1
     sel_type = request.form.get("type")
     sel_id = request.form.get("id")
@@ -345,7 +302,6 @@ def edit_del():
     else:
         up_le = sel_le
     sel_id = str(sel_id)
-
     if sel_type == "update":
         db.session.query(db.matter).filter(matter.acc == acc,matter.id == sel_id).update({
                                                 db.matter.event:up_na,
@@ -368,9 +324,6 @@ def edit_del():
 
 @app.route('/friends')#好友页
 def friends():
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     friends = db.session.query(userInfo.name).filter(userInfo.name == acc).all()
     #friends = db.get_list("select * from `friends` where friends-o =",acc)#prdc mode
     friends = lamba(friends,friends,headers_f)
@@ -381,9 +334,6 @@ def friends():
 
 @app.route('/settings')#设置
 def settings():
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     o_data_mode = sets.rd("config","Data_Mode")
     o_keep_login = sets.rd("config","Keep_Login")
     o_Dev_Mode = sets.rd("config","Dev_Mode")
@@ -395,9 +345,6 @@ def settings():
 
 @app.route('/settings_update',methods=["POST"])#更新设置
 def update_settings():
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     set_data = request.form.get("DataBase_Mode")
     set_KpLi = request.form.get("Keep_Login")
     set_Mode = request.form.get("Dev_Mode")
@@ -411,9 +358,6 @@ def update_settings():
 
 @app.route('/personal')#个人页
 def me():
-    login_error = check_login(acc)
-    if login_error != 1:
-        return redirect("/")
     uid = db.session.query(userInfo.id).filter(userInfo.name == acc,).first()
     uid = cal_add(*uid)
     return render_template('personal.html',
@@ -427,16 +371,16 @@ def login_check():
     global login_error,choose
     account = request.form.get("logid")
     password = request.form.get("password")
-    get_acc = db.session.query(userInfo.name).filter(userInfo.name == account).all()
-    acc_result = len(get_acc)
-    get_pwd = db.session.query(userInfo.key).filter(userInfo.key == password).all()
-    print(get_pwd)
-    pwd_result = len(get_pwd)
+    acc_result = db.session.query(userInfo.name).filter(userInfo.name == account).first()
+    pwd_result = db.session.query(userInfo.key).filter(userInfo.name==account,userInfo.key == password).first()
     if account and password:
-        if acc_result >= 1:
-            if pwd_result >= 1:
+        if acc_result:
+            if pwd_result:
                 global acc
-                acc = request.form.get("logid")
+                session['username']=account
+                if keep_login == 'True':
+                    session.permanent=True
+                acc= session.get('username')
                 login_error = "已登录"
                 choose = 0
                 return redirect('/home')
@@ -454,7 +398,7 @@ def login_check():
 @app.route('/logout',methods=['POST'])#登出
 def logout():
     global login_error,acc
-    acc = None
+    session.clear()
     login_error = '登出成功'
     return redirect('/')
 
@@ -467,7 +411,6 @@ def register_test():
     password = request.form.get("set_password")
     check_password = request.form.get("check_password")
     if password == check_password:
-        print(account,password)
         info = db.userInfo(
                         name=account,
                         key= password,
@@ -484,6 +427,20 @@ def register_test():
 @app.errorhandler(404)
 def error404(error):
     return render_template('404.html'),404
+
+@app.before_request
+def before_login():
+    global acc
+    if 'username' in session:
+        acc = session.get('username')
+        if request.path == '/':
+            return redirect('/home')
+        else:
+            pass
+    else:
+        if request.path != '/' and request.path != '/login' and request.endpoint not in ('static'):
+            return redirect('/')
+        pass
 
 if __name__ == '__main__':
     setup()

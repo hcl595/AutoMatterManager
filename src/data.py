@@ -95,10 +95,4 @@ def setup():
 
 if __name__ == "__main__":
     setup()
-    result = session.query(userInfo.id,userInfo.name,).all()
-    print("already")
-    print(result)
-    print("complete!")
-    result = session.query(matter.id,matter.acc,).all()
-    print(result)
     print("complete!")
