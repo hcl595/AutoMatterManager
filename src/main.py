@@ -34,6 +34,7 @@ login_error = "已打开"
 keep_login = sets.keep_login()
 dev_mode = sets.dev_mode()
 port = sets.rd("Settings","port")
+host = sets.rd('Settings',"host")
 
 #app
 @app.route('/')#根目录
@@ -422,31 +423,28 @@ def logout():
     return redirect('/')
 
 
-@app.route('/register_test',methods=['POST'])#注册
-def register_test():
+@app.route('/register',methods=['POST'])#注册
+def register():
     global login_error
     account = request.form.get("reg_txt")
     mail = request.form.get("email")
     password = request.form.get("set_password")
     check_password = request.form.get("check_password")
-    if password == check_password:
-        info = db.userInfo(
-                        name=account,
-                        key= password,
-                        mail=mail,)
-        db.session.add(info)
-        db.session.commit()
-        db.session.remove()
-        login_error = '注册成功'
+    if account and password and mail:
+        if password == check_password:
+            info = db.userInfo(
+                            name=account,
+                            key= password,
+                            mail=mail,)
+            db.session.add(info)
+            db.session.commit()
+            db.session.remove()
+            login_error = '注册成功'
+        else:
+            login_error = '密码不一'
     else:
-        login_error = '密码不一'
+        login_error = '完整填写信息'
     return redirect('/')
-
-
-@app.context_processor
-def context():
-    username = session.get('username')
-    return dict(username)
 
 
 @app.errorhandler(404)
@@ -462,7 +460,7 @@ def before_login():
         else:
             pass
     else:
-        if request.path != '/' and request.path != '/login' and request.endpoint not in ('static'):
+        if request.path != '/' and request.path != '/login' and request.path != '/register' and request.endpoint not in ('static'):
             return redirect('/')
         pass
 
@@ -471,7 +469,7 @@ if __name__ == '__main__':
     setup()
     if dev_mode == "True":
     #WEB MODE
-        app.run(debug=True,port=port)
+        app.run(debug=True,port=port,host=host)
     #GUI MODE
     else:
         ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
