@@ -11,9 +11,9 @@ from Setup import Settings
 #Flask
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SECRET_KEY'] = 'ReleaseVer057Dev'
+app.config['SECRET_KEY'] = 'ReleaseVer058'
 
-#Release_Ver_0.5.7_Dev 2023-05-09-1
+#Release_Ver_0.5.8_Dev 2023-05-10-1
 
 #database
 import data as db
@@ -28,12 +28,9 @@ headers1 = ["Id", "type", "level", "acc"]
 headers_f = ["Id","friends"]
 global choose,events,type_list,edit_msg,edit_judge_msg,login_error
 choose = 0
-login_sc = 0
-show_share = 0
 edit_judge_msg = 0
 edit_msg = None
 login_error = "已打开"
-event2 = []
 keep_login = sets.keep_login()
 dev_mode = sets.dev_mode()
 port = sets.rd("Settings","port")
@@ -74,7 +71,7 @@ def home_check():
     else:
         choose = 2
         events = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
-                .filter(matter.day== datechoose,matter.acc== acc,).all()
+                .filter(matter.day== datechoose,matter.acc== session.get('username'),).all()
         events = lamba(events,events,headers)
     return redirect('/home')
 
@@ -100,15 +97,15 @@ def home_search():
     edit_msg = "搜索完成"
     if redirect_1 == 'home':
         choose = 1
-        events = cut_search(search,acc,headers)
+        events = cut_search(search,session.get('username'),headers)
         return redirect('/home')
     elif redirect_1 == 'share':
         choose = 1
-        events = cut_search(search,acc,headers)
+        events = cut_search(search,session.get('username'),headers)
         return redirect('/share')
     elif redirect_1 == "types" :
         choose = 2
-        type_list = cut_types(search,acc,headers)
+        type_list = cut_types(search,session.get('username'),headers)
         return redirect('/type')
     else:
         return redirect('/home')
@@ -138,7 +135,7 @@ def add_test():
     level = request.form.get("level")
     if len(day) == 0:
         day = time.strftime('%Y-%m-%d',time.localtime(time.time()))
-    Info = db.matter(day=day,start_time=start_time,finish_time=finish_time,event=event,level=level,acc=acc)
+    Info = db.matter(day=day,start_time=start_time,finish_time=finish_time,event=event,level=level,acc=session.get('username'))
     db.session.add(Info)
     db.session.commit()
     db.session.remove()
@@ -149,12 +146,12 @@ def add_test():
 def share():
     global edit_judge_msg,edit_msg,events
     share_list = db.session.query(db.share.id,db.share.share_user,db.share.acc_user,db.share.eventID,db.share.eventInfo,)\
-                .filter(db.share.acc_user == acc,).all()
+                .filter(db.share.acc_user == session.get('username'),).all()
     share_list = lamba(share_list,share_list,headers=["Id","share_user","acc_user","event","event_name"])
     if choose != 1:
         edit_judge_msg = 0
         events = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
-                .filter(matter.acc == acc).all()
+                .filter(matter.acc == session.get('username')).all()
         events = lamba(events,events,headers)
     return render_template('share.html',
                             events = events,
@@ -177,7 +174,7 @@ def share_check():
         share_names = db.session.query(matter.event).filter(matter.id == share_id).one()
         for share_name in share_names:
             share_name,*share_names = share_names
-            Info = db.share(share_user = acc,acc_user = input_acc,eventID = share_id,eventInfo = share_name)
+            Info = db.share(share_user = session.get('username'),acc_user = input_acc,eventID = share_id,eventInfo = share_name)
             db.session.add(Info)
             db.session.commit()
             db.session.remove()
@@ -195,7 +192,7 @@ def share_accref():
         share_list = db.session.query(matter.day,matter.start_time,matter.finish_time,matter.event,matter.level)\
                     .filter(matter.id == id).one()
         day,start_time,finish_time,event,level = share_list
-        Info = db.matter(day=day,start_time=start_time,finish_time=finish_time,event=event,level=level,acc=acc)
+        Info = db.matter(day=day,start_time=start_time,finish_time=finish_time,event=event,level=level,acc=session.get('username'))
         db.session.add(Info)
         db.session.query(db.share).filter(db.share.id == share_id).delete()
         edit_msg = "已接受"
@@ -212,7 +209,7 @@ def type_web():
     global type_list,edit_msg,edit_judge_msg
     if choose != 2:
         edit_judge_msg = 0
-        type_list = db.session.query(type.id,type.type,type.level,type.acc,).filter(acc == acc).all()
+        type_list = db.session.query(type.id,type.type,type.level,type.acc,).filter(matter.acc == session.get('username')).all()
         type_list = list(map(lambda e: dict(zip(headers1, e)), type_list))
     return render_template('type.html',
                             tables = type_list,
@@ -228,7 +225,7 @@ def type_add():
     edit_msg = "添加成功"
     type_input = request.form.get("type")
     level_input = request.form.get("level")
-    Info = type(type= type_input,level= level_input,acc= acc)
+    Info = type(type= type_input,level= level_input,acc= session.get('username'))
     db.session.add(Info)
     db.session.commit()
     db.session.remove()
@@ -251,7 +248,7 @@ def type_del():
 def edit():           
     global edit_msg,edit_judge_msg
     id = db.session.query(matter.id,matter.day,matter.start_time,matter.finish_time,matter.event,matter.level,)\
-        .filter(acc == acc).all()
+        .filter(matter.acc == session.get('username')).all()
     id = list(map(lambda e: dict(zip(headers, e)), id))
     place_time = time.strftime('%H:%m',time.localtime(time.time()))
     day = time.strftime('%Y-%m-%d',time.localtime(time.time()))
@@ -303,7 +300,7 @@ def edit_del():
         up_le = sel_le
     sel_id = str(sel_id)
     if sel_type == "update":
-        db.session.query(db.matter).filter(matter.acc == acc,matter.id == sel_id).update({
+        db.session.query(db.matter).filter(matter.acc == session.get('username'),matter.id == sel_id).update({
                                                 db.matter.event:up_na,
                                                 db.matter.day:up_da,
                                                 db.matter.start_time:up_st,
@@ -324,8 +321,8 @@ def edit_del():
 
 @app.route('/friends')#好友页
 def friends():
-    friends = db.session.query(userInfo.name).filter(userInfo.name == acc).all()
-    #friends = db.get_list("select * from `friends` where friends-o =",acc)#prdc mode
+    friends = db.session.query(userInfo.name).filter(userInfo.name == session.get('username')).all()
+    #friends = db.get_list("select * from `friends` where friends-o =",session.get('username'))#prdc mode
     friends = lamba(friends,friends,headers_f)
     return render_template("friends.html",
                            friends = friends
@@ -351,18 +348,38 @@ def update_settings():
     sets.cfg_in("config","Data_Mode",set_data)
     sets.cfg_in("config","Keep_Login",set_KpLi)
     sets.cfg_in("config","Dev_Mode",set_Mode)
-    sets.cfg_in("Settings","acc",acc)
+    sets.cfg_in("Settings","acc",session.get('username'))
     db.reconn()
     return redirect('/settings')
 
 
-@app.route('/personal')#个人页
+@app.route('/personal',methods=['POST','GET'])#个人页
 def me():
-    uid = db.session.query(userInfo.id).filter(userInfo.name == acc,).first()
-    uid = cal_add(*uid)
+    global edit_msg,edit_judge_msg
+    edit_judge_msg = 1
+    if request.method == 'POST':
+        account = request.form.get("up_txt")
+        mail = request.form.get("email")
+        password = request.form.get("set_password")
+        check_password = request.form.get("check_password")
+        if len(account) == 0:
+            account = session.get('username')
+        if len(password) == 0:
+            password = session.get('password')
+        if len(mail) == 0:
+            mail = "None"
+        db.session.query(db.userInfo).filter(userInfo.id == session.get('uid')).update({
+            db.userInfo.name:account,
+            db.userInfo.key:password,
+            db.userInfo.mail:mail,})
+        db.session.commit()
+        db.session.remove()
+        edit_msg = '修改成功'
+    elif request.method == 'GET':
+        pass
     return render_template('personal.html',
-                            user = acc,
-                            uid = uid
+                            username = session.get('username'),
+                            uid = session.get('uid'),
                             )
 
 
@@ -376,11 +393,13 @@ def login_check():
     if account and password:
         if acc_result:
             if pwd_result:
-                global acc
                 session['username']=account
+                session['password']=password
+                uid =db.session.query(userInfo.id).filter(userInfo.name==account,userInfo.key==password).first()
+                uid = uid[0]
+                session['uid']= uid
                 if keep_login == 'True':
                     session.permanent=True
-                acc= session.get('username')
                 login_error = "已登录"
                 choose = 0
                 return redirect('/home')
@@ -397,7 +416,7 @@ def login_check():
 
 @app.route('/logout',methods=['POST'])#登出
 def logout():
-    global login_error,acc
+    global login_error
     session.clear()
     login_error = '登出成功'
     return redirect('/')
@@ -424,15 +443,20 @@ def register_test():
     return redirect('/')
 
 
+@app.context_processor
+def context():
+    username = session.get('username')
+    return dict(username)
+
+
 @app.errorhandler(404)
 def error404(error):
     return render_template('404.html'),404
 
+
 @app.before_request
 def before_login():
-    global acc
     if 'username' in session:
-        acc = session.get('username')
         if request.path == '/':
             return redirect('/home')
         else:
@@ -441,6 +465,7 @@ def before_login():
         if request.path != '/' and request.path != '/login' and request.endpoint not in ('static'):
             return redirect('/')
         pass
+
 
 if __name__ == '__main__':
     setup()
