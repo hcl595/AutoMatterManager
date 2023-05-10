@@ -82,15 +82,15 @@ class type(Base):
 def setup():
     if not database_exists(engine.url):
         create_database(engine.url)
-        # 删除表
         Base.metadata.drop_all(engine)
-        # 创建表
         Base.metadata.create_all(engine)
-    user_instance = userInfo(
-    name="admin",
-    key="admin",
-    )
-    session.add(user_instance)
+        user_instance = userInfo(
+        name="admin",
+        key="admin",
+        )
+        session.add(user_instance)
+    else:
+        pass
 
 
 if __name__ == "__main__":

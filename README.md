@@ -56,7 +56,7 @@
       keep_login = True
 
       [Settings]
-      acc = zsc
+      host = 127.0.0.1
       port = 5000
    2. 讲解
       data_mode  数据库连接方式 True为在线数据库 False为本地数据库
