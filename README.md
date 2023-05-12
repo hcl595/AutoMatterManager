@@ -33,9 +33,7 @@
       2. 一直下一步直到完成安装
       3. 点击右侧"软件管理"
       4. 安装"MySQL8.0.12"
-   2. 导入数据库
-      1. 运行data.py
-      2. 完成数据库导入
+   2. 完成
                             
 2. 修改配置文件确保虚拟环境正常运行
    1. 将整个文件夹复制到新的电脑
@@ -46,22 +44,3 @@
    5. 修改程序目录下Scripts\activate.bat文件（可以用记事本打开）
    6. set VIRTUAL_ENV=D:\FlaskProgram\DEV\改为你的位置
    7. 运行程序目录下Scripts\activate.bat文件，激活虚拟环境。
-
-# Introducing
-1. config.cfg
-   1. 实例
-      [config]
-      data_mode = False
-      dev_mode = False
-      keep_login = True
-
-      [Settings]
-      host = 127.0.0.1
-      port = 5000
-   2. 讲解
-      data_mode  数据库连接方式 True为在线数据库 False为本地数据库
-      dave_mode  开发者模式     True为开启开发者 False为关闭开发者
-      keep_login 保持登录       True为开启      False为关闭
-
-
-

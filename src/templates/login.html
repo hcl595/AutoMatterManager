@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录界面</title>
     <link rel="shortcut icon" href="/static/res/test.ico">
-    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/main.css">
     <script src="/static/js/jquery.min.js" charset="utf-8"></script>
 </head>
-<body onload="clickme();">
-<div class="container" id="login-box">
+<body onload="clickme();" class="change">
+    {% if page == 'register' %}
+<div class="container  right-panel-active" id="login-box">
+    {% else %}
+<div class="container " id="login-box">
+    {% endif %}
     <div class="form-container sign-up-container">
-        <form action="/register_test" method="POST">
+        <form action="/register" method="POST">
             <h1>注册</h1>           
             <div class="txtb">
                 <input name="reg_txt" type="reg_text">
@@ -29,7 +33,7 @@
                 <input name="check_password" type="reg_check_password">
                 <span data-placeholder="Confirm Password" ></span>
             </div>            
-            <button>注册</button>
+            <button herf="/register">注册</button>
         </form>
     </div>
     <div class="form-container sign-in-container">

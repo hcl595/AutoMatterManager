@@ -23,20 +23,16 @@
                 <tbody>
                     <tr>
                         <th scope="col">
-                            <h4>基础设置</h4>
+                            <button id="Base_Settings" style="height: auto;width: auto;background:rgba(0,0,0,0)"><h4>基础设置</h4></button>
                         </th>
                     </tr>
                     <tr>
                         <th scope="col">
-                            <h4>个性化设置</h4>
+                            <button id="Psnl_Settings" style="height: auto;width: auto;background:rgba(0,0,0,0)"><h4>个性化设置</h4></button>
                         </th>
                     </tr>
                 </tbody>
             </table>
-            <form action="/setting_search" method="post">
-                <input name="input_setting" style="background: rgba(255, 255, 255, 0) ;height:100%;width:80%;float:center;" placeholder="设置名称">
-                <button style="background: rgba(255, 255, 255, 0) ;height:100%;width:20%;float:right;" herf="/setting_search"><i class="fa fa-search"></i></button>
-            </form>
         </div>
     </div>
 
@@ -56,8 +52,12 @@
                     <th>
                         <select name="DataBase_Mode" id="answer">
                             <option value={{ Data_c }}>{{ Data_c }}</option>
-                            <option value="True">ON</option>
-                            <option value="False">OFF</option>
+                            {% if Data_c == "True" %}
+                            <option value="False">False</option>
+                            {% endif %}
+                            {% if Data_c == "False" %}
+                            <option value="True">True</option>
+                            {% endif %}
                         </select>
                     </th>
                 </tr>
@@ -68,8 +68,12 @@
                     <th>
                         <select name="Keep_Login" id="answer">
                             <option value={{ KpLi_c }}>{{ KpLi_c }}</option>
-                            <option value="True">ON</option>
-                            <option value="False">OFF</option>
+                            {% if KpLi_c == "True" %}
+                            <option value="False">False</option>
+                            {% endif %}
+                            {% if KpLi_c == "False" %}
+                            <option value="True">True</option>
+                            {% endif %}
                         </select>
                     </th>
                 </tr>
@@ -80,9 +84,29 @@
                     <th>
                         <select name="Dev_Mode" id="answer">
                             <option value={{ Dev_c }}>{{ Dev_c }}</option>
-                            <option value="True">ON</option>
-                            <option value="False">OFF</option>
+                            {% if Dev_c == "True" %}
+                            <option value="False">False</option>
+                            {% endif %}
+                            {% if Dev_c == "False" %}
+                            <option value="True">True</option>
+                            {% endif %}
                         </select>
+                    </th>
+                </tr>
+                <tr>
+                    <th>
+                        <h4>Launch_Host</h4>
+                    </th>
+                    <th>
+                        <input name="Launch_Host" type="launch_host" value={{ Host }}>
+                    </th>
+                </tr>
+                <tr>
+                    <th>
+                        <h4>Launch_Port</h4>
+                    </th>
+                    <th>
+                        <input name="Launch_Port" type="launch_port" value={{ Port }}>
                     </th>
                 </tr>
             </table>
@@ -91,5 +115,15 @@
     </div>
 </div>
 </body>
+<script>
+    $(".txtb input").on("focus",function(){
+        $(this).addClass("focus")
+    })
+
+    $(".txtb input").on("blur",function(){
+        if($(this).val() == '')
+        $(this).removeClass("focus")
+    })
+</script>
 </html>
 {% endblock %}
