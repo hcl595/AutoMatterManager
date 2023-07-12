@@ -1,0 +1,8 @@
+.vscode
+auto_venv
+data
+output
+exe.json
+setup.iss
+src/data/*
+src/__pycache__/

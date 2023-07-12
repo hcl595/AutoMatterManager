@@ -1,6 +1,6 @@
 #Head
 from flask import Flask, redirect, render_template, request, session
-from flaskwebgui import FlaskUI
+from flaskwebgui import FlaskUI,close_application
 import time
 import ctypes
 
@@ -34,8 +34,7 @@ page = 'login'
 login_error = "已打开"
 keep_login = sets.keep_login()
 dev_mode = sets.dev_mode()
-port = sets.rd("Settings","port")
-host = sets.rd("Settings","host")
+
 
 #app
 @app.route('/')#根目录
@@ -86,7 +85,7 @@ def home_event_check():
     delid = request.form.get("finish")
     db.session.query(db.type).filter(type.id== delid).delete()
     db.session.commit()
-    db.session.remove()
+    
     return redirect('/home')
 
 
@@ -140,7 +139,6 @@ def add_test():
     Info = db.matter(date=date,start_time=start_time,finish_time=finish_time,matterInfo=event,level=level,comment='None',account=session.get('username'))
     db.session.add(Info)
     db.session.commit()
-    db.session.remove()
     return redirect('/add')
 
 
@@ -179,7 +177,7 @@ def share_check():
             Info = db.share(share_user = session.get('username'),accept_user = input_acc,matterID = share_id,matterInfo = share_name)
             db.session.add(Info)
             db.session.commit()
-            db.session.remove()
+            
     return redirect('/share')
     
 
@@ -202,7 +200,6 @@ def share_accref():
         edit_msg = "已拒绝"
         db.session.query(db.share).filter(id == share_id).delete()
     db.session.commit()
-    db.session.remove()
     return redirect('/share')
 
 
@@ -230,7 +227,7 @@ def type_add():
     Info = type(type= type_input,level= level_input,account = session.get('username'))
     db.session.add(Info)
     db.session.commit()
-    db.session.remove()
+    
     return redirect("/type")
 
 
@@ -242,7 +239,7 @@ def type_del():
     id = request.form.get("id")
     db.session.query(db.type).filter(type.id == id).delete()
     db.session.commit()
-    db.session.remove()
+    
     return redirect("/type")
 
 
@@ -311,12 +308,12 @@ def edit_del():
                                                 db.matter.level:up_le,
                                                 })
         db.session.commit()
-        db.session.remove()
+        
         edit_judge_msg = "编辑成功"         
     elif sel_type == "del":
         db.session.query(db.matter).filter(matter.id == sel_id).delete()
         db.session.commit()
-        db.session.remove()
+        
         edit_judge_msg = "删除成功"      
     return redirect('/edit')
 
@@ -333,13 +330,12 @@ def friends():
 
 @app.route('/settings')#设置
 def settings():
-    o_data_mode = sets.rd("config","Data_Mode")
+    o_keep_login = sets.rd("config","Keep_Login")
     o_keep_login = sets.rd("config","Keep_Login")
     o_Dev_Mode = sets.rd("config","Dev_Mode")
     o_Lac_Host = sets.rd("Settings","host")
     o_Lac_Port = sets.rd("Settings","port")
     return render_template('settings.html',
-                           Data_c = o_data_mode,
                            KpLi_c = o_keep_login,
                            Dev_c = o_Dev_Mode,
                            Host = o_Lac_Host,
@@ -378,7 +374,7 @@ def me():
                 db.userInfo.account:account,
                 db.userInfo.password:password,})
                 db.session.commit()
-                db.session.remove()
+                
                 login_error = '修改成功'
                 session.clear()
                 page = "login"
@@ -390,7 +386,7 @@ def me():
             db.session.query(db.userInfo).filter(userInfo.id == session.get('uid')).update({
                 db.userInfo.account:account,})
             db.session.commit()
-            db.session.remove()
+            
             login_error = '修改成功'
             session.clear()
             page = "login"
@@ -447,7 +443,8 @@ def logout():
     global login_error
     session.clear()
     login_error = '登出成功'
-    return redirect('/')
+    close_application()
+    
 
 
 @app.route('/register',methods=['POST'])#注册
@@ -465,7 +462,7 @@ def register():
                             mail=mail,)
             db.session.add(info)
             db.session.commit()
-            db.session.remove()
+            
             login_error = '注册成功'
             page = 'login'
         else:
@@ -498,8 +495,8 @@ if __name__ == '__main__':
     setup()
     if dev_mode == "True":
     #WEB MODE
-        app.run(debug=True,port=port,host=host)
+        app.run(debug=True,port=sets.rd("Settings","port"),host=sets.rd("Settings","host"))
     #GUI MODE
     else:
         ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
-        FlaskUI(app=app,server='flask',port=port,width=1000,height=800).run()
+        FlaskUI(app=app,server='flask',port=sets.rd("Settings","port"),width=1000,height=800).run()

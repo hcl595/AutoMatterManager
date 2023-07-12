@@ -1,9 +1,7 @@
-mysql-connector
-mysql
 sqlalchemy
-sqlalchemy_utils
 flask
 flaskwebgui
+pyautogui
 
 # dev
 black

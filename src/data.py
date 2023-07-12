@@ -1,15 +1,18 @@
 # models.py
 from sqlalchemy import create_engine,Column,Integer,String,UniqueConstraint,Index
 from sqlalchemy.orm import sessionmaker,scoped_session
-from sqlalchemy_utils import database_exists,create_database
 from sqlalchemy.ext.declarative import declarative_base
+from pathlib import Path
+import os
 
 # 基础类
+basedir= os.path.abspath(os.path.dirname(__file__)) + "\\data"
+file_path = Path(__file__).parent / "data" / "models.sqlite"
+folder = Path(__file__).parent / "data"
 Base = declarative_base()
-engine = create_engine("mysql+mysqlconnector://root:root@127.0.0.1:3306/FlaskProgram")
+engine = create_engine('sqlite:///'+os.path.join(basedir,'models.sqlite'), echo=True)
 Session = sessionmaker(bind=engine)
-session = scoped_session(Session)
-
+session = Session()
 
 class userInfo(Base):
     # 数据库中存储的表名
@@ -79,20 +82,19 @@ class type(Base):
 
 
 def setup():
-    if not database_exists(engine.url):
-        create_database(engine.url)
-        Base.metadata.drop_all(engine)
+    if not folder.exists():
+        os.makedirs(folder)
+    if not file_path.exists():
+        print("Database does not exist and is being created automatically...")
+        f = open(file_path,'w')
         Base.metadata.create_all(engine)
         user_instance = userInfo(
         account="admin",
         password="admin1234",
         )
         session.add(user_instance)
-        session.commit()
-        session.remove()
-        print("database setup completely!")
-    else:
-        pass
+        session.commit() 
+        print("database is created successfully!")
 
 if __name__ == "__main__":
     setup()
