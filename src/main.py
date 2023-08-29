@@ -498,5 +498,8 @@ if __name__ == '__main__':
         app.run(debug=True,port=sets.rd("Settings","port"),host=sets.rd("Settings","host"))
     #GUI MODE
     else:
-        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+        try:
+            ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+        except:
+            pass
         FlaskUI(app=app,server='flask',port=sets.rd("Settings","port"),width=1000,height=800).run()
