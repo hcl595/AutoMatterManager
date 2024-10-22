@@ -83,7 +83,8 @@ def home_event_check():
     edit_judge_msg = 1
     edit_msg = "完成!"
     delid = request.form.get("finish")
-    db.session.query(db.type).filter(type.id== delid).delete()
+    print(delid)
+    db.session.query(db.matter).filter(matter.id== delid).delete()
     db.session.commit()
     
     return redirect('/home')
